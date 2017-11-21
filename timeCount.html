@@ -7,26 +7,24 @@
     <title>RO守護永恆 - 刷珍稀曼陀羅計時器</title>
     <script src="./library/vue.js"></script>
     <script src="./library/moment.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-    <div id="app">
-        <time-count-bar></time-count-bar>
-        <time-count-bar></time-count-bar>
-        <time-count-bar></time-count-bar>
-        <time-count-bar></time-count-bar>
-        <time-count-bar></time-count-bar>
-        <time-count-bar></time-count-bar>
-        <time-count-bar></time-count-bar>
-        <time-count-bar></time-count-bar>
-        <time-count-bar></time-count-bar>
-        <time-count-bar></time-count-bar>
+    <div id="app" class="container-fluid">
+        <time-count-bar :is-focus="selectBarId == bar.id" @click.native="selectBarId = bar.id" v-for="bar in bars" :key="bar.id">
+        </time-count-bar>
     </div>
 
     <script>
         Vue.component('time-count-bar', {
+            props: {
+                isFocus: Boolean
+            },
             template: `
-        <div>
+        <div :class="{'bg-success' : isFocus}">
             界線：<input placeholder="ex:1a" maxlength="3" size="2">
             死亡時間： <input v-model="inputTime" placeholder="{hour}:{min}" maxlength="5" size="10">
             <button @click="add90Min">Add 1.5 hr</button>
@@ -62,7 +60,21 @@
         })
 
         var app = new Vue({
-            el: '#app'
+            el: '#app',
+            data: {
+                bars: [
+                    { id: 1 },
+                    { id: 2 },
+                    { id: 3 }
+                ],
+                selectBarId: ''
+            },
+            methods: {
+
+            },
+            computed: {
+
+            }
         })
     </script>
 </body>
