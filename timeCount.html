@@ -14,8 +14,11 @@
 
 <body>
     <div id="app" class="container-fluid">
-        <time-count-bar :is-focus="selectBarId == bar.id" @click.native="selectBarId = bar.id" v-for="bar in bars" :key="bar.id">
+        <time-count-bar :is-focus="selectedBarId == bar.id" @click.native="selectedBarId = bar.id" v-for="bar in bars" :key="bar.id">
         </time-count-bar>
+        <br>
+        <button @click="addNewBar">Add Row</button>
+        <button @click="deleteBar">Delete Row</button>
     </div>
 
     <script>
@@ -60,17 +63,25 @@
         })
 
         var app = new Vue({
+            created() {
+                for (var i = 1; i <= this.initBarCount; i++) {
+                    this.bars.push({ id : i});
+                }
+            },
             el: '#app',
             data: {
-                bars: [
-                    { id: 1 },
-                    { id: 2 },
-                    { id: 3 }
-                ],
-                selectBarId: ''
+                bars: [],
+                selectedBarId: '',
+                initBarCount: 5
             },
             methods: {
-
+                addNewBar(){
+                    var newBarId = ++this.initBarCount;
+                    this.bars.push({ id : newBarId});
+                },
+                deleteBar(){
+                    this.bars.pop();
+                }
             },
             computed: {
 
