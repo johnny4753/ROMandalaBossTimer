@@ -17,8 +17,8 @@
         <time-count-bar :is-focus="selectedBarId == bar.id" @click.native="selectedBarId = bar.id" v-for="bar in bars" :key="bar.id">
         </time-count-bar>
         <br>
-        <button @click="addNewBar">Add Row</button>
-        <button @click="deleteBar">Delete Row</button>
+        <button @click="addNewBar">Add Bar below the Selected</button>
+        <button @click="deleteSelectedBar">Delete Selected Bar</button>
     </div>
 
     <script>
@@ -71,20 +71,26 @@
             el: '#app',
             data: {
                 bars: [],
-                selectedBarId: '',
+                selectedBarId: 0,
                 initBarCount: 5
             },
             methods: {
                 addNewBar(){
                     var newBarId = ++this.initBarCount;
-                    this.bars.push({ id : newBarId});
+                    this.bars.splice(this.selectedBarIndex+1, 0, { id : newBarId});
                 },
-                deleteBar(){
-                    this.bars.pop();
+                deleteSelectedBar(){
+                    if (confirm('Are you sure you want to delete selected Bar?')) {
+                        this.bars.splice(this.selectedBarIndex, 1);
+                    }
                 }
             },
             computed: {
-
+                selectedBarIndex(){
+                    return this.bars
+                                .map(bar => bar.id)
+                                .indexOf(this.selectedBarId);
+                }
             }
         })
     </script>
