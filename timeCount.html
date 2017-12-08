@@ -92,10 +92,17 @@
             },
             methods: {
                 addNewBar() {
+                    if (this.selectedBarIndex === -1) {
+                        alert("Please select a bar");
+                        return;
+                    }
                     var newBarId = ++this.initBarCount;
                     this.bars.splice(this.selectedBarIndex + 1, 0, { id: newBarId });
                 },
                 deleteSelectedBar() {
+                    if (this.selectedBarIndex === -1) {
+                        return;
+                    }
                     if (confirm('Are you sure you want to delete selected Bar?')) {
                         this.bars.splice(this.selectedBarIndex, 1);
                     }
