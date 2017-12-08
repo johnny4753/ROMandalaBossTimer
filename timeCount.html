@@ -83,6 +83,7 @@
                 for (var i = 1; i <= this.initBarCount; i++) {
                     this.bars.push({ id: i });
                 }
+                $(document).on("keydown", this.disableF5);
             },
             el: '#app',
             data: {
@@ -106,6 +107,9 @@
                     if (confirm('Are you sure you want to delete selected Bar?')) {
                         this.bars.splice(this.selectedBarIndex, 1);
                     }
+                },
+                disableF5(e) {
+                    if ((e.which || e.keyCode) == 116) e.preventDefault();
                 }
             },
             computed: {
