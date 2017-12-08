@@ -29,36 +29,51 @@
             template: `
         <div :class="{'bg-success' : isFocus}">
             界線：<input v-model="line" placeholder="ex:1a" maxlength="3" size="2">
-            死亡時間： <input v-model="inputTime" placeholder="{hour}:{min}" maxlength="5" size="10">
-            <button @click="add90Min">Add 1.5 hr</button>
+            死亡時間： <input v-model="inputTime" placeholder="{h}:{m}" maxlength="5" size="5">
+            <button @click="getNow()">Get Now</button>
             再生時間：{{resultTime}} [{{line}}]
             <button @click="updateInputTime">再生時間→死亡時間</button>
+            備份死亡時間：{{backUpInputTime}}
         </div>
         `,
             data() {
                 return {
                     inputTime: '',
-                    resultTime: '',
-                    line: ''
+                    line: '',
+                    backUpInputTime: ''
                 }
             },
             methods: {
-                add90Min() {
-                    var hrMinArray = this.inputTime.split(":");
+                add90Min(inputTime) {
+                    var hrMinArray = inputTime.split(":");
                     var hour = hrMinArray[0];
                     var minute = hrMinArray[1];
                     var d = new Date(2017, 11, 19, hour, minute);
                     var newDateObj = moment(d).add(90, 'm');
-                    this.resultTime = this.formatDate(newDateObj.toDate());
+                    return this.formatDate(newDateObj.toDate());
                 },
                 formatDate(date) {
                     var hours = date.getHours();
                     var minutes = date.getMinutes();
-
+                    if (hours > 12) {
+                        hours = hours - 12;
+                    }
                     return hours + ':' + minutes;
                 },
                 updateInputTime() {
                     this.inputTime = this.resultTime;
+                },
+                getNow() {
+                    var date = new Date(); // for now
+                    var fDate = this.formatDate(date);
+                    this.backUpInputTime = this.inputTime;
+                    this.inputTime = fDate;
+                }
+            },
+            computed: {
+                resultTime() {
+                    var result = this.add90Min(this.inputTime);
+                    return result;
                 }
             }
         })
@@ -66,7 +81,7 @@
         var app = new Vue({
             created() {
                 for (var i = 1; i <= this.initBarCount; i++) {
-                    this.bars.push({ id : i});
+                    this.bars.push({ id: i });
                 }
             },
             el: '#app',
@@ -76,21 +91,21 @@
                 initBarCount: 5
             },
             methods: {
-                addNewBar(){
+                addNewBar() {
                     var newBarId = ++this.initBarCount;
-                    this.bars.splice(this.selectedBarIndex+1, 0, { id : newBarId});
+                    this.bars.splice(this.selectedBarIndex + 1, 0, { id: newBarId });
                 },
-                deleteSelectedBar(){
+                deleteSelectedBar() {
                     if (confirm('Are you sure you want to delete selected Bar?')) {
                         this.bars.splice(this.selectedBarIndex, 1);
                     }
                 }
             },
             computed: {
-                selectedBarIndex(){
+                selectedBarIndex() {
                     return this.bars
-                                .map(bar => bar.id)
-                                .indexOf(this.selectedBarId);
+                        .map(bar => bar.id)
+                        .indexOf(this.selectedBarId);
                 }
             }
         })
