@@ -14,7 +14,8 @@
 
 <body>
     <div id="app" class="container-fluid">
-        <time-count-bar :is-focus="selectedBarId == bar.id" @click.native="selectedBarId = bar.id" v-for="bar in bars" :key="bar.id">
+        <time-count-bar @result-time-change="updateBarResultTime" @get-now-event="highlightClosestResultTime(bar.id)" :is-focus="selectedBarId == bar.id" @click.native="selectedBarId = bar.id"
+            v-for="bar in bars" :key="bar.id" :id="bar.id" :is-highlight-result-time="highlightResultTimeBarId == bar.id">
         </time-count-bar>
         <br>
         <button @click="addNewBar">Add Bar below the Selected</button>
@@ -24,14 +25,16 @@
     <script>
         Vue.component('time-count-bar', {
             props: {
-                isFocus: Boolean
+                id: Number,
+                isFocus: Boolean,
+                isHighlightResultTime: Boolean
             },
             template: `
         <div :class="{'bg-success' : isFocus}">
             界線：<input v-model="line" placeholder="ex:1a" maxlength="3" size="2">
             死亡時間： <input v-model="inputTime" placeholder="{h}:{m}" maxlength="5" size="5">
             <button @click="getNow()">Get Now</button>
-            再生時間：{{resultTime}} [{{line}}]
+            再生時間：<div style="display:inline" :class="{'text-danger' : isHighlightResultTime}">{{resultTime}} [{{line}}] </div>
             <button @click="updateInputTime">再生時間→死亡時間</button>
             備份死亡時間：{{backUpInputTime}}
         </div>
@@ -68,12 +71,14 @@
                     var fDate = this.formatDate(date);
                     this.backUpInputTime = this.inputTime;
                     this.inputTime = fDate;
+                    this.$emit('get-now-event');
                 }
             },
             computed: {
                 resultTime() {
-                    var result = this.add90Min(this.inputTime);
-                    return result;
+                    var rTime = this.add90Min(this.inputTime);
+                    this.$emit('result-time-change', this.id, rTime);
+                    return rTime;
                 }
             }
         })
@@ -81,7 +86,7 @@
         var app = new Vue({
             created() {
                 for (var i = 1; i <= this.initBarCount; i++) {
-                    this.bars.push({ id: i });
+                    this.bars.push({ id: i , resultTime:''});
                 }
                 $(document).on("keydown", this.disableF5);
             },
@@ -89,7 +94,8 @@
             data: {
                 bars: [],
                 selectedBarId: 0,
-                initBarCount: 5
+                initBarCount: 5,
+                highlightResultTimeBarId: 0
             },
             methods: {
                 addNewBar() {
@@ -110,6 +116,35 @@
                 },
                 disableF5(e) {
                     if ((e.which || e.keyCode) == 116) e.preventDefault();
+                },
+                highlightClosestResultTime(barId) {
+                    var theClosestResultTimeBarId = 0;
+                    var nowTime = new Date();
+                    var nowHour = nowTime.getHours();
+                    var nowMinute = nowTime.getMinutes();
+                    var totalNowMinutes = nowHour*60 + nowMinute;
+                    // alert('totalNowMinutes = '+totalNowMinutes);
+                    var minTotalMinutesDiff = 99999999;
+                    var notIncludeSelfBars = this.bars.filter(b => b.id !== barId);
+                    for (let i = 0; i < notIncludeSelfBars.length; i++) {
+                        var hrMinArray = notIncludeSelfBars[i].resultTime.split(":");
+                        var hour = parseInt(hrMinArray[0]);
+                        var minute = parseInt(hrMinArray[1]);
+                        var totalBarResultTimeMinutes = hour*60 + minute;
+                        // alert('totalBarResultTimeMinutes = '+totalBarResultTimeMinutes);
+                        var difference = totalBarResultTimeMinutes - totalNowMinutes;
+                        // alert("difference = "+difference);
+                        if( difference>0 && difference < minTotalMinutesDiff)
+                        {
+                            minTotalMinutesDiff = difference;
+                            theClosestResultTimeBarId = notIncludeSelfBars[i].id;
+                        }
+                    }
+                    this.highlightResultTimeBarId = theClosestResultTimeBarId;
+                },
+                updateBarResultTime(id, rTime){
+                    var theBar = this.bars.find(b => b.id === id);
+                    theBar.resultTime = rTime;
                 }
             },
             computed: {
