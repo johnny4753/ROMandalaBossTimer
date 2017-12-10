@@ -14,8 +14,8 @@
 
 <body>
     <div id="app" class="container-fluid">
-        <time-count-bar @result-time-change="updateBarResultTime" @get-now-event="highlightClosestResultTime(bar.id)" :is-focus="selectedBarId == bar.id" @click.native="selectedBarId = bar.id"
-            v-for="bar in bars" :key="bar.id" :id="bar.id" :is-highlight-result-time="highlightResultTimeBarId == bar.id">
+        <time-count-bar @result-time-change="updateBarResultTime" @get-now-event="highlightClosestResultTime(bar.id)" :is-focus="selectedBarId == bar.id"
+            @click.native="selectedBarId = bar.id" v-for="bar in bars" :key="bar.id" :id="bar.id" :is-highlight-result-time="highlightResultTimeBarId == bar.id">
         </time-count-bar>
         <br>
         <button @click="addNewBar">Add Bar below the Selected</button>
@@ -86,7 +86,7 @@
         var app = new Vue({
             created() {
                 for (var i = 1; i <= this.initBarCount; i++) {
-                    this.bars.push({ id: i , resultTime:''});
+                    this.bars.push({ id: i, resultTime: '' });
                 }
                 $(document).on("keydown", this.disableF5);
             },
@@ -121,8 +121,11 @@
                     var theClosestResultTimeBarId = 0;
                     var nowTime = new Date();
                     var nowHour = nowTime.getHours();
+                    if (nowHour > 12) {
+                        nowHour = nowHour - 12;
+                    }
                     var nowMinute = nowTime.getMinutes();
-                    var totalNowMinutes = nowHour*60 + nowMinute;
+                    var totalNowMinutes = nowHour * 60 + nowMinute;
                     // alert('totalNowMinutes = '+totalNowMinutes);
                     var minTotalMinutesDiff = 99999999;
                     var notIncludeSelfBars = this.bars.filter(b => b.id !== barId);
@@ -130,19 +133,18 @@
                         var hrMinArray = notIncludeSelfBars[i].resultTime.split(":");
                         var hour = parseInt(hrMinArray[0]);
                         var minute = parseInt(hrMinArray[1]);
-                        var totalBarResultTimeMinutes = hour*60 + minute;
+                        var totalBarResultTimeMinutes = hour * 60 + minute;
                         // alert('totalBarResultTimeMinutes = '+totalBarResultTimeMinutes);
                         var difference = totalBarResultTimeMinutes - totalNowMinutes;
                         // alert("difference = "+difference);
-                        if( difference>0 && difference < minTotalMinutesDiff)
-                        {
+                        if (difference > 0 && difference < minTotalMinutesDiff) {
                             minTotalMinutesDiff = difference;
                             theClosestResultTimeBarId = notIncludeSelfBars[i].id;
                         }
                     }
                     this.highlightResultTimeBarId = theClosestResultTimeBarId;
                 },
-                updateBarResultTime(id, rTime){
+                updateBarResultTime(id, rTime) {
                     var theBar = this.bars.find(b => b.id === id);
                     theBar.resultTime = rTime;
                 }
