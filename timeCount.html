@@ -20,6 +20,10 @@
         <br>
         <button @click="addNewBar">Add Bar below the Selected</button>
         <button @click="deleteSelectedBar">Delete Selected Bar</button>
+        <input v-model="remindIntervalMinutes" size="1" type="number">分鐘前聲音提醒
+        <audio id="myAudio">
+            <source src="./sound/gem.ogg" type="audio/ogg"> Your browser does not support the audio element.
+        </audio>
     </div>
 
     <script>
@@ -89,15 +93,31 @@
                     this.bars.push({ id: i, resultTime: '' });
                 }
                 $(document).on("keydown", this.disableF5);
+                this.interval = setInterval(this.time, 5000);
             },
             el: '#app',
             data: {
                 bars: [],
                 selectedBarId: 0,
                 initBarCount: 5,
-                highlightResultTimeBarId: 0
+                highlightResultTimeBarId: 0,
+                datenow:'',
+                datenowMinutes: 0,
+                canPlayAudio:true,
+                remindIntervalMinutes:3
             },
             methods: {
+                time() {
+                    var now = new Date();
+                    var hours = now.getHours();
+                    var minutes = now.getMinutes();
+                    var secs = now.getSeconds();
+                    if (hours > 12) {
+                        hours = hours - 12;
+                    }
+                    this.datenow = `${hours}:${minutes}:${secs}`
+                    this.datenowMinutes = this.getTotalMinutes(hours, minutes);
+                },
                 addNewBar() {
                     if (this.selectedBarIndex === -1) {
                         alert("Please select a bar");
@@ -147,6 +167,13 @@
                 updateBarResultTime(id, rTime) {
                     var theBar = this.bars.find(b => b.id === id);
                     theBar.resultTime = rTime;
+                },
+                playAudio() {
+                    var x = document.getElementById("myAudio");
+                    x.play();
+                },
+                getTotalMinutes(hours, minutes){
+                    return hours * 60 + minutes;
                 }
             },
             computed: {
@@ -154,6 +181,31 @@
                     return this.bars
                         .map(bar => bar.id)
                         .indexOf(this.selectedBarId);
+                }
+            },
+            watch:{
+                datenow(now){
+                    var self = this;
+                    var theClosestTimeBar = self.bars.find(b => b.id === self.highlightResultTimeBarId);
+                    if(!theClosestTimeBar)
+                        return;
+                    var hrMinArray = theClosestTimeBar.resultTime.split(":");
+                    var hour = parseInt(hrMinArray[0]);
+                    var minute = parseInt(hrMinArray[1]);
+                    var closestMinutes = self.getTotalMinutes(hour, minute);
+                    var difference = closestMinutes - self.datenowMinutes;
+                    if(difference >0 && difference <= self.remindIntervalMinutes && self.canPlayAudio){
+                        // alert("BOSS!!");
+                        self.playAudio();
+                        self.canPlayAudio = false;
+                    }
+                    
+                },
+                canPlayAudio(val){
+                    var self = this;
+                    if(val == false){
+                        setTimeout(function(){ self.canPlayAudio = true; }, self.remindIntervalMinutes*60*1000);
+                    }
                 }
             }
         })
