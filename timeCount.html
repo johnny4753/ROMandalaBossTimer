@@ -55,16 +55,15 @@
                     var hrMinArray = inputTime.split(":");
                     var hour = hrMinArray[0];
                     var minute = hrMinArray[1];
-                    var d = new Date(2017, 11, 19, hour, minute);
+                    var d = new Date();
+                    d.setHours(hour);
+                    d.setMinutes(minute);
                     var newDateObj = moment(d).add(90, 'm');
-                    return this.formatDate(newDateObj.toDate());
+                    return newDateObj.toDate();
                 },
                 formatDate(date) {
                     var hours = date.getHours();
                     var minutes = date.getMinutes();
-                    if (hours > 12) {
-                        hours = hours - 12;
-                    }
                     return hours + ':' + minutes;
                 },
                 updateInputTime() {
@@ -82,7 +81,7 @@
                 resultTime() {
                     var rTime = this.add90Min(this.inputTime);
                     this.$emit('result-time-change', this.id, rTime);
-                    return rTime;
+                    return this.formatDate(rTime);
                 }
             }
         })
@@ -90,7 +89,7 @@
         var app = new Vue({
             created() {
                 for (var i = 1; i <= this.initBarCount; i++) {
-                    this.bars.push({ id: i, resultTime: '' });
+                    this.bars.push({ id: i, resultTime: {} });
                 }
                 $(document).on("keydown", this.disableF5);
                 this.interval = setInterval(this.time, 5000);
@@ -101,22 +100,14 @@
                 selectedBarId: 0,
                 initBarCount: 5,
                 highlightResultTimeBarId: 0,
-                datenow:'',
-                datenowMinutes: 0,
-                canPlayAudio:true,
-                remindIntervalMinutes:3
+                datenow: '',
+                canPlayAudio: true,
+                remindIntervalMinutes: 3
             },
             methods: {
                 time() {
                     var now = new Date();
-                    var hours = now.getHours();
-                    var minutes = now.getMinutes();
-                    var secs = now.getSeconds();
-                    if (hours > 12) {
-                        hours = hours - 12;
-                    }
-                    this.datenow = `${hours}:${minutes}:${secs}`
-                    this.datenowMinutes = this.getTotalMinutes(hours, minutes);
+                    this.datenow = now;
                 },
                 addNewBar() {
                     if (this.selectedBarIndex === -1) {
@@ -140,22 +131,12 @@
                 highlightClosestResultTime(barId) {
                     var theClosestResultTimeBarId = 0;
                     var nowTime = new Date();
-                    var nowHour = nowTime.getHours();
-                    if (nowHour > 12) {
-                        nowHour = nowHour - 12;
-                    }
-                    var nowMinute = nowTime.getMinutes();
-                    var totalNowMinutes = nowHour * 60 + nowMinute;
-                    // alert('totalNowMinutes = '+totalNowMinutes);
+                    // alert("nowTime="+nowTime);
                     var minTotalMinutesDiff = 99999999;
                     var notIncludeSelfBars = this.bars.filter(b => b.id !== barId);
                     for (let i = 0; i < notIncludeSelfBars.length; i++) {
-                        var hrMinArray = notIncludeSelfBars[i].resultTime.split(":");
-                        var hour = parseInt(hrMinArray[0]);
-                        var minute = parseInt(hrMinArray[1]);
-                        var totalBarResultTimeMinutes = hour * 60 + minute;
-                        // alert('totalBarResultTimeMinutes = '+totalBarResultTimeMinutes);
-                        var difference = totalBarResultTimeMinutes - totalNowMinutes;
+                        var rTime = new Date(notIncludeSelfBars[i].resultTime);
+                        var difference = this.getTimeDiffInMinutes(rTime, nowTime);
                         // alert("difference = "+difference);
                         if (difference > 0 && difference < minTotalMinutesDiff) {
                             minTotalMinutesDiff = difference;
@@ -172,8 +153,10 @@
                     var x = document.getElementById("myAudio");
                     x.play();
                 },
-                getTotalMinutes(hours, minutes){
-                    return hours * 60 + minutes;
+                getTimeDiffInMinutes(date1, date2) {
+                    var diffMs = (date1.getTime() - date2.getTime()); // milliseconds between now & Christmas
+                    var resultInMinutes = Math.round(diffMs / 60000);
+                    return resultInMinutes;
                 }
             },
             computed: {
@@ -183,28 +166,25 @@
                         .indexOf(this.selectedBarId);
                 }
             },
-            watch:{
-                datenow(now){
+            watch: {
+                datenow(now) {
                     var self = this;
                     var theClosestTimeBar = self.bars.find(b => b.id === self.highlightResultTimeBarId);
-                    if(!theClosestTimeBar)
+                    if (!theClosestTimeBar)
                         return;
-                    var hrMinArray = theClosestTimeBar.resultTime.split(":");
-                    var hour = parseInt(hrMinArray[0]);
-                    var minute = parseInt(hrMinArray[1]);
-                    var closestMinutes = self.getTotalMinutes(hour, minute);
-                    var difference = closestMinutes - self.datenowMinutes;
-                    if(difference >0 && difference <= self.remindIntervalMinutes && self.canPlayAudio){
+                    var theClosestResultTime = theClosestTimeBar.resultTime;
+                    var difference = self.getTimeDiffInMinutes(new Date(theClosestResultTime), new Date(self.datenow));
+                    if (difference > 0 && difference <= self.remindIntervalMinutes && self.canPlayAudio) {
                         // alert("BOSS!!");
                         self.playAudio();
                         self.canPlayAudio = false;
                     }
-                    
+
                 },
-                canPlayAudio(val){
+                canPlayAudio(val) {
                     var self = this;
-                    if(val == false){
-                        setTimeout(function(){ self.canPlayAudio = true; }, self.remindIntervalMinutes*60*1000);
+                    if (val == false) {
+                        setTimeout(function () { self.canPlayAudio = true; }, self.remindIntervalMinutes * 60 * 1000);
                     }
                 }
             }
