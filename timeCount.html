@@ -10,13 +10,20 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="./node_modules/sortablejs/Sortable.min.js"></script>
+    <script src="./node_modules/vuedraggable/dist/vuedraggable.js"></script>
 </head>
 
 <body>
     <div id="app" class="container-fluid">
-        <time-count-bar @result-time-change="updateBarResultTime" @get-now-event="highlightClosestResultTime(bar.id)" :is-focus="selectedBarId == bar.id"
-            @click.native="selectedBarId = bar.id" v-for="bar in bars" :key="bar.id" :id="bar.id" :is-highlight-result-time="highlightResultTimeBarId == bar.id">
-        </time-count-bar>
+        <draggable v-model="bars">
+            <transition-group name="list-complete">
+                <time-count-bar @result-time-change="updateBarResultTime" @get-now-event="highlightClosestResultTime(bar.id)" :is-focus="selectedBarId == bar.id"
+                    @click.native="selectedBarId = bar.id" v-for="bar in bars" :key="bar.id" :id="bar.id" :is-highlight-result-time="highlightResultTimeBarId == bar.id"
+                    class="list-complete-item" >
+                </time-count-bar>
+            </transition-group>
+        </draggable>
         <br>
         <button @click="addNewBar">Add Bar below the Selected</button>
         <button @click="deleteSelectedBar">Delete Selected Bar</button>
@@ -25,6 +32,20 @@
             <source src="./sound/gem.ogg" type="audio/ogg"> Your browser does not support the audio element.
         </audio>
     </div>
+
+    <style>
+        .list-complete-item {
+            padding: 4px;
+            margin-top: 4px;
+            border: solid 1px;
+            transition: all 1s;
+        }
+
+        .list-complete-enter,
+        .list-complete-leave-active {
+            opacity: 0;
+        }
+    </style>
 
     <script>
         Vue.component('time-count-bar', {
