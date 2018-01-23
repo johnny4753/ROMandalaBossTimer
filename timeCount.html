@@ -25,6 +25,7 @@
             </transition-group>
         </draggable>
         <br>
+        <p>當前線數：{{lineCount}}</p>
         <button @click="addNewBar">Add Bar below the Selected</button>
         <button @click="deleteSelectedBar">Delete Selected Bar</button>
         <input v-model="remindIntervalMinutes" size="1" type="number">分鐘前聲音提醒
@@ -207,6 +208,9 @@
                     return this.bars
                         .map(bar => bar.id)
                         .indexOf(this.selectedBarId);
+                },
+                lineCount(){
+                    return this.bars.filter( bar => bar.resultTime != 'Invalid Date').length;
                 }
             },
             watch: {
