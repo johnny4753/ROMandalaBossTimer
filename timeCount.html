@@ -20,7 +20,7 @@
             <transition-group name="list-complete">
                 <time-count-bar @result-time-change="updateBarResultTime" @get-now-event="highlightClosestResultTime(bar.id)" :is-focus="selectedBarId == bar.id"
                     @click.native="selectedBarId = bar.id" v-for="bar in bars" :key="bar.id" :id="bar.id" :is-highlight-result-time="highlightResultTimeBarId == bar.id"
-                    class="list-complete-item" >
+                    class="list-complete-item">
                 </time-count-bar>
             </transition-group>
         </draggable>
@@ -35,7 +35,7 @@
 
     <style>
         .list-complete-item {
-            padding: 4px;
+            padding: 1px;
             margin-top: 4px;
             border: solid 1px;
             transition: all 0.2s;
@@ -44,6 +44,24 @@
         .list-complete-enter,
         .list-complete-leave-active {
             opacity: 0;
+        }
+
+        .flash {
+            animation-name: flash;
+            animation-duration: 0.2s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+            animation-play-state: running;
+        }
+
+        @keyframes flash {
+            from {
+                color: red;
+            }
+            to {
+                color: black;
+            }
         }
     </style>
 
@@ -59,7 +77,11 @@
             界線：<input v-model="line" placeholder="ex:1a" maxlength="3" size="2">
             死亡時間： <input v-model="inputTime" placeholder="{h}:{m}" maxlength="5" size="5">
             <button @click="getNow()">Get Now</button>
-            再生時間：<div style="display:inline" :class="{'text-danger' : isHighlightResultTime}">{{resultTime}} [{{line}}] </div>
+            再生時間：
+            <div style="display:inline" 
+                 :class="{'text-danger' : isHighlightResultTime, 'flash' : isHighlightResultTime}">
+                 {{resultTime}} [{{line}}] 
+            </div>
             <button @click="updateInputTime">再生時間→死亡時間</button>
             備份死亡時間：{{backUpInputTime}}
         </div>
