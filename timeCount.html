@@ -18,9 +18,19 @@
     <div id="app" class="container-fluid">
         <draggable v-model="bars">
             <transition-group name="list-complete">
-                <time-count-bar @result-time-change="updateBarResultTime" @get-now-event="highlightClosestResultTime(bar.id)" :is-focus="selectedBarId == bar.id"
-                    @click.native="selectedBarId = bar.id" v-for="bar in bars" :key="bar.id" :id="bar.id" :is-highlight-result-time="highlightResultTimeBarId == bar.id"
-                    class="list-complete-item">
+                <time-count-bar
+                    v-for="bar in bars"
+                    @get-now-event="getNowHandler(bar.id)" 
+                    @click.native="selectedBarId = bar.id" 
+                    :is-focus="selectedBarId == bar.id"
+                    :key="bar.id" 
+                    :id="bar.id"
+                    :input-time="bar.inputTime"
+                    @input="(inputTime) => { modifyBarInputAndResultTime(bar, inputTime) }"
+                    :result-time="bar.resultTime"
+                    :is-highlight-result-time="highlightResultTimeBarId == bar.id"
+                    class="list-complete-item"
+                >
                 </time-count-bar>
             </transition-group>
         </draggable>
@@ -67,65 +77,51 @@
     </style>
 
     <script>
+    function formatDate(date) {
+        if (typeof date.getHours === "undefined")
+            return "";
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        return hours + ':' + minutes;
+    }
+
         Vue.component('time-count-bar', {
             props: {
                 id: Number,
+                inputTime: [Date,String],
+                resultTime: [Date,String],
                 isFocus: Boolean,
                 isHighlightResultTime: Boolean
             },
             template: `
         <div :class="{'bg-success' : isFocus}">
             界線：<input v-model="line" placeholder="ex:1a" maxlength="3" size="2">
-            死亡時間： <input v-model="inputTime" placeholder="{h}:{m}" maxlength="5" size="5">
+            死亡時間： <input :value="inputTime"
+                             @input="$emit('input', $event.target.value)" 
+                             placeholder="{h}:{m}" 
+                             maxlength="5" 
+                             size="5">
             <button @click="getNow()">Get Now</button>
             再生時間：
             <div style="display:inline" 
                  :class="{'text-danger' : isHighlightResultTime, 'flash' : isHighlightResultTime}">
-                 {{resultTime}} [{{line}}] 
+                 {{fResultTime}} [{{line}}] 
             </div>
-            <button @click="updateInputTime">再生時間→死亡時間</button>
-            備份死亡時間：{{backUpInputTime}}
         </div>
         `,
             data() {
                 return {
-                    inputTime: '',
                     line: '',
-                    backUpInputTime: ''
                 }
             },
             methods: {
-                add90Min(inputTime) {
-                    var hrMinArray = inputTime.split(":");
-                    var hour = hrMinArray[0];
-                    var minute = hrMinArray[1];
-                    var d = new Date();
-                    d.setHours(hour);
-                    d.setMinutes(minute);
-                    var newDateObj = moment(d).add(90, 'm');
-                    return newDateObj.toDate();
-                },
-                formatDate(date) {
-                    var hours = date.getHours();
-                    var minutes = date.getMinutes();
-                    return hours + ':' + minutes;
-                },
-                updateInputTime() {
-                    this.inputTime = this.resultTime;
-                },
                 getNow() {
-                    var date = new Date(); // for now
-                    var fDate = this.formatDate(date);
-                    this.backUpInputTime = this.inputTime;
-                    this.inputTime = fDate;
                     this.$emit('get-now-event');
                 }
             },
             computed: {
-                resultTime() {
-                    var rTime = this.add90Min(this.inputTime);
-                    this.$emit('result-time-change', this.id, rTime);
-                    return this.formatDate(rTime);
+                fResultTime(){
+                    return formatDate(this.resultTime);
                 }
             }
         })
@@ -133,16 +129,16 @@
         var app = new Vue({
             created() {
                 for (var i = 1; i <= this.initBarCount; i++) {
-                    this.bars.push({ id: i, resultTime: {} });
+                    this.bars.push({ id: i, inputTime: '', resultTime: '' });
                 }
                 $(document).on("keydown", this.disableF5);
                 this.interval = setInterval(this.time, 5000);
             },
             el: '#app',
             data: {
+                initBarCount: 15,
                 bars: [],
                 selectedBarId: 0,
-                initBarCount: 15,
                 highlightResultTimeBarId: 0,
                 datenow: '',
                 canPlayAudio: true,
@@ -159,7 +155,7 @@
                         return;
                     }
                     var newBarId = ++this.initBarCount;
-                    this.bars.splice(this.selectedBarIndex + 1, 0, { id: newBarId });
+                    this.bars.splice(this.selectedBarIndex + 1, 0, { id: newBarId, inputTime: '', resultTime: '' });
                 },
                 deleteSelectedBar() {
                     if (this.selectedBarIndex === -1) {
@@ -172,6 +168,28 @@
                 disableF5(e) {
                     if ((e.which || e.keyCode) == 116) e.preventDefault();
                 },
+                modifyBarInputAndResultTime(bar, inputTime){
+                    bar.inputTime = inputTime;
+                    var hrMin =  inputTime.split(':');
+                    var hrs =hrMin[0];
+                    var mins = hrMin[1];
+                    var date = new Date();
+                    date.setHours(hrs);
+                    date.setMinutes(mins);
+                    bar.resultTime = this.add90Min(date);
+                },
+                add90Min(inputTime) {
+                    var newDateObj = moment(inputTime).add(90, 'm');
+                    return newDateObj.toDate();
+                },
+                getNowHandler(barId) {
+                    var dateNow = new Date(); // for now
+                    var theBar = this.bars.find(b => b.id === barId);
+                    theBar.inputTime = formatDate(dateNow);
+                    theBar.resultTime = this.add90Min(dateNow);
+                    this.highlightClosestResultTime(barId);
+                }
+                ,
                 highlightClosestResultTime(barId) {
                     var theClosestResultTimeBarId = 0;
                     var nowTime = new Date();
@@ -189,16 +207,12 @@
                     }
                     this.highlightResultTimeBarId = theClosestResultTimeBarId;
                 },
-                updateBarResultTime(id, rTime) {
-                    var theBar = this.bars.find(b => b.id === id);
-                    theBar.resultTime = rTime;
-                },
                 playAudio() {
                     var x = document.getElementById("myAudio");
                     x.play();
                 },
                 getTimeDiffInMinutes(date1, date2) {
-                    var diffMs = (date1.getTime() - date2.getTime()); // milliseconds between now & Christmas
+                    var diffMs = (date1.getTime() - date2.getTime());
                     var resultInMinutes = Math.round(diffMs / 60000);
                     return resultInMinutes;
                 }
@@ -210,7 +224,7 @@
                         .indexOf(this.selectedBarId);
                 },
                 lineCount(){
-                    return this.bars.filter( bar => bar.resultTime != 'Invalid Date').length;
+                    return this.bars.filter( bar => bar.resultTime !== '').length;
                 }
             },
             watch: {
