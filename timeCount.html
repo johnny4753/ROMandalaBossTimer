@@ -25,6 +25,8 @@
                     :is-focus="selectedBarId == bar.id"
                     :key="bar.id" 
                     :id="bar.id"
+                    :line="bar.line"
+                    @line-change="(line) => { bar.line = line }"
                     :input-time="bar.inputTime"
                     @input="(inputTime) => { modifyBarInputAndResultTime(bar, inputTime) }"
                     :result-time="bar.resultTime"
@@ -88,6 +90,7 @@
         Vue.component('time-count-bar', {
             props: {
                 id: Number,
+                line: String,
                 inputTime: [Date,String],
                 resultTime: [Date,String],
                 isFocus: Boolean,
@@ -95,7 +98,11 @@
             },
             template: `
         <div :class="{'bg-success' : isFocus}">
-            界線：<input v-model="line" placeholder="ex:1a" maxlength="3" size="2">
+            界線：<input :value="line"
+                        @input="$emit('line-change', $event.target.value)" 
+                        placeholder="ex:1a" 
+                        maxlength="3" 
+                        size="2">
             死亡時間： <input :value="inputTime"
                              @input="$emit('input', $event.target.value)" 
                              placeholder="{h}:{m}" 
@@ -111,7 +118,6 @@
         `,
             data() {
                 return {
-                    line: '',
                 }
             },
             methods: {
@@ -129,7 +135,7 @@
         var app = new Vue({
             created() {
                 for (var i = 1; i <= this.initBarCount; i++) {
-                    this.bars.push({ id: i, inputTime: '', resultTime: '' });
+                    this.bars.push({ id: i, line:'', inputTime: '', resultTime: '' });
                 }
                 $(document).on("keydown", this.disableF5);
                 this.interval = setInterval(this.time, 5000);
