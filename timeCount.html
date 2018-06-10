@@ -12,6 +12,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="./node_modules/sortablejs/Sortable.min.js"></script>
     <script src="./node_modules/vuedraggable/dist/vuedraggable.js"></script>
+    <script src="./node_modules/file-saver/FileSaver.min.js"></script>
 </head>
 
 <body>
@@ -37,7 +38,13 @@
             </transition-group>
         </draggable>
         <br>
-        <p>當前線數：{{lineCount}}</p>
+        <div>
+            <p>
+                當前線數：{{lineCount}}
+                <button @click="exportToTxt">Export to txt</button>
+            </p>
+            
+        </div>
         <button @click="addNewBar">Add Bar below the Selected</button>
         <button @click="deleteSelectedBar">Delete Selected Bar</button>
         <input v-model="remindIntervalMinutes" size="1" type="number">分鐘前聲音提醒
@@ -151,6 +158,14 @@
                 remindIntervalMinutes: 3
             },
             methods: {
+                exportToTxt(){
+                    let barsData = this.bars.map(bar => {
+                        let fResultTime = formatDate(bar.resultTime);
+                        return fResultTime && bar.line ? `\r\n${fResultTime} [${bar.line}]` : '';
+                    });
+                    let blob = new Blob(barsData, {type: "text/plain;charset=utf-8"});
+                    saveAs(blob, "Mandala Time.txt");
+                },
                 time() {
                     var now = new Date();
                     this.datenow = now;
