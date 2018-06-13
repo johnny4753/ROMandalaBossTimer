@@ -132,22 +132,39 @@
                         maxlength="5" 
                         size="6"
                         @focus="$emit('input-focus')"
-                        @blur="$emit('input-unfocus')"> [{{line}}] 
+                        @blur="$emit('input-unfocus')"> 
+                 <span v-if="line !== ''"> [{{line}}] </span> 
+                 <span>
+                    <button @click="hasPeopleBtnHandler()" 
+                            :class="['btn', hasPeopleStyle, 'btn-xs']">
+                        {{hasPeopleText}}
+                    </button>
+                 </span>
             </div>
         </div>
         `,
             data() {
                 return {
+                    hasPeople : false
                 }
             },
             methods: {
                 getNow() {
                     this.$emit('get-now-event');
+                },
+                hasPeopleBtnHandler(){
+                    this.hasPeople = !this.hasPeople;
                 }
             },
             computed: {
                 fRebirthTime(){
                     return formatDate(this.rebirthTime);
+                },
+                hasPeopleStyle(){
+                    return this.hasPeople ? 'btn-danger' : 'btn-success'
+                },
+                hasPeopleText(){
+                    return this.hasPeople ? '有人' : '沒人'
                 }
             }
         })
