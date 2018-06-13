@@ -17,21 +17,24 @@
 
 <body>
     <div id="app" class="container-fluid">
-        <draggable v-model="bars">
+        <draggable v-model="bars" :options="draggableOptions">
             <transition-group name="list-complete">
                 <time-count-bar
                     v-for="bar in bars"
                     @get-now-event="getNowHandler(bar.id)" 
+                    @input-focus="inputFocusHandler()"
+                    @input-unfocus="inputUnFocusHandler()"
                     @click.native="selectedBarId = bar.id" 
                     :is-focus="selectedBarId == bar.id"
                     :key="bar.id" 
                     :id="bar.id"
                     :line="bar.line"
                     @line-change="(line) => { bar.line = line }"
-                    :input-time="bar.inputTime"
-                    @input="(inputTime) => { modifyBarInputAndResultTime(bar, inputTime) }"
-                    :result-time="bar.resultTime"
-                    :is-highlight-result-time="highlightResultTimeBarId == bar.id"
+                    :death-time="bar.deathTime"
+                    @death-time-change="(deathTime) => { deathTimeChangeHandler(bar, deathTime) }"
+                    :rebirth-time="bar.rebirthTime"
+                    @rebirth-time-change="(rebirthTime) => { rebirthTimeChangeHandler(bar, rebirthTime) }"
+                    :is-highlight-rebirth-time="highlightRebirthTimeBarId == bar.id"
                     class="list-complete-item"
                 >
                 </time-count-bar>
@@ -98,10 +101,10 @@
             props: {
                 id: Number,
                 line: String,
-                inputTime: [Date,String],
-                resultTime: [Date,String],
+                deathTime: [Date,String],
+                rebirthTime: [Date,String],
                 isFocus: Boolean,
-                isHighlightResultTime: Boolean
+                isHighlightRebirthTime: Boolean
             },
             template: `
         <div :class="{'bg-success' : isFocus}">
@@ -109,17 +112,27 @@
                         @input="$emit('line-change', $event.target.value)" 
                         placeholder="ex:1a" 
                         maxlength="3" 
-                        size="2">
-            死亡時間： <input :value="inputTime"
-                             @input="$emit('input', $event.target.value)" 
+                        size="2"
+                        @focus="$emit('input-focus')"
+                        @blur="$emit('input-unfocus')">
+            死亡時間： <input :value="deathTime"
+                             @input="$emit('death-time-change', $event.target.value)" 
                              placeholder="{h}:{m}" 
                              maxlength="5" 
-                             size="5">
+                             size="3"
+                             @focus="$emit('input-focus')"
+                             @blur="$emit('input-unfocus')">
             <button @click="getNow()">Get Now</button>
             再生時間：
             <div style="display:inline" 
-                 :class="{'text-danger' : isHighlightResultTime, 'flash' : isHighlightResultTime}">
-                 {{fResultTime}} [{{line}}] 
+                 :class="{'text-danger' : isHighlightRebirthTime, 'flash' : isHighlightRebirthTime}">
+                 <input :value="fRebirthTime"
+                        @input="$emit('rebirth-time-change', $event.target.value);"
+                        placeholder="{h}:{m}" 
+                        maxlength="5" 
+                        size="3"
+                        @focus="$emit('input-focus')"
+                        @blur="$emit('input-unfocus')"> [{{line}}] 
             </div>
         </div>
         `,
@@ -133,8 +146,8 @@
                 }
             },
             computed: {
-                fResultTime(){
-                    return formatDate(this.resultTime);
+                fRebirthTime(){
+                    return formatDate(this.rebirthTime);
                 }
             }
         })
@@ -142,7 +155,7 @@
         var app = new Vue({
             created() {
                 for (var i = 1; i <= this.initBarCount; i++) {
-                    this.bars.push({ id: i, line:'', inputTime: '', resultTime: '' });
+                    this.bars.push({ id: i, line:'', deathTime: '', rebirthTime: '' });
                 }
                 $(document).on("keydown", this.disableF5);
                 this.interval = setInterval(this.time, 5000);
@@ -152,16 +165,17 @@
                 initBarCount: 15,
                 bars: [],
                 selectedBarId: 0,
-                highlightResultTimeBarId: 0,
+                highlightRebirthTimeBarId: 0,
                 datenow: '',
                 canPlayAudio: true,
-                remindIntervalMinutes: 3
+                remindIntervalMinutes: 3,
+                draggableOptions:{disabled:false}
             },
             methods: {
                 exportToTxt(){
                     let barsData = this.bars.map(bar => {
-                        let fResultTime = formatDate(bar.resultTime);
-                        return fResultTime && bar.line ? `\r\n${fResultTime} [${bar.line}]` : '';
+                        let fRebirthTime = formatDate(bar.rebirthTime);
+                        return fRebirthTime && bar.line ? `\r\n${fRebirthTime} [${bar.line}]` : '';
                     });
                     let blob = new Blob(barsData, {type: "text/plain;charset=utf-8"});
                     saveAs(blob, "Mandala Time.txt");
@@ -176,7 +190,7 @@
                         return;
                     }
                     var newBarId = ++this.initBarCount;
-                    this.bars.splice(this.selectedBarIndex + 1, 0, { id: newBarId, inputTime: '', resultTime: '' });
+                    this.bars.splice(this.selectedBarIndex + 1, 0, { id: newBarId, deathTime: '', rebirthTime: '' });
                 },
                 deleteSelectedBar() {
                     if (this.selectedBarIndex === -1) {
@@ -189,44 +203,70 @@
                 disableF5(e) {
                     if ((e.which || e.keyCode) == 116) e.preventDefault();
                 },
-                modifyBarInputAndResultTime(bar, inputTime){
-                    bar.inputTime = inputTime;
-                    var hrMin =  inputTime.split(':');
+                deathTimeChangeHandler(bar, deathTime){
+                    bar.deathTime = deathTime;
+                    var hrMin =  deathTime.split(':');
                     var hrs =hrMin[0];
                     var mins = hrMin[1];
                     var date = new Date();
                     date.setHours(hrs);
                     date.setMinutes(mins);
-                    bar.resultTime = this.add90Min(date);
+                    bar.rebirthTime = this.add90Min(date);
+                    this.highlightClosestRebirthTime();
                 },
-                add90Min(inputTime) {
-                    var newDateObj = moment(inputTime).add(90, 'm');
+                rebirthTimeChangeHandler(bar, rebirthTime){
+                    if(!rebirthTime)
+                        return;
+                    var hrMin =  rebirthTime.split(':');
+                    if( hrMin[0] && hrMin[1] ){
+                        var hrs =hrMin[0];
+                        var mins = hrMin[1];
+                        var date = new Date();
+                        date.setHours(hrs);
+                        date.setMinutes(mins);
+                        bar.rebirthTime = date;
+                        bar.deathTime = formatDate(this.subtract90Min(date));
+                    }
+                    this.highlightClosestRebirthTime();
+                },
+                add90Min(deathTime) {
+                    var newDateObj = moment(deathTime).add(90, 'm');
+                    return newDateObj.toDate();
+                },
+                subtract90Min(rebirthTime){
+                    var newDateObj = moment(rebirthTime).subtract(90, 'm');
                     return newDateObj.toDate();
                 },
                 getNowHandler(barId) {
                     var dateNow = new Date(); // for now
                     var theBar = this.bars.find(b => b.id === barId);
-                    theBar.inputTime = formatDate(dateNow);
-                    theBar.resultTime = this.add90Min(dateNow);
-                    this.highlightClosestResultTime(barId);
+                    theBar.deathTime = formatDate(dateNow);
+                    theBar.rebirthTime = this.add90Min(dateNow);
+                    this.highlightClosestRebirthTime(barId);
+                },
+                inputFocusHandler(){
+                    this.draggableOptions.disabled = true;
+                },
+                inputUnFocusHandler(){
+                    this.draggableOptions.disabled = false;
                 }
                 ,
-                highlightClosestResultTime(barId) {
-                    var theClosestResultTimeBarId = 0;
+                highlightClosestRebirthTime(barId) {
+                    var theClosestRebirthTimeBarId = 0;
                     var nowTime = new Date();
                     // alert("nowTime="+nowTime);
                     var minTotalMinutesDiff = 99999999;
                     var notIncludeSelfBars = this.bars.filter(b => b.id !== barId);
                     for (let i = 0; i < notIncludeSelfBars.length; i++) {
-                        var rTime = new Date(notIncludeSelfBars[i].resultTime);
+                        var rTime = new Date(notIncludeSelfBars[i].rebirthTime);
                         var difference = this.getTimeDiffInMinutes(rTime, nowTime);
                         // alert("difference = "+difference);
                         if (difference > 0 && difference < minTotalMinutesDiff) {
                             minTotalMinutesDiff = difference;
-                            theClosestResultTimeBarId = notIncludeSelfBars[i].id;
+                            theClosestRebirthTimeBarId = notIncludeSelfBars[i].id;
                         }
                     }
-                    this.highlightResultTimeBarId = theClosestResultTimeBarId;
+                    this.highlightRebirthTimeBarId = theClosestRebirthTimeBarId;
                 },
                 playAudio() {
                     var x = document.getElementById("myAudio");
@@ -245,17 +285,17 @@
                         .indexOf(this.selectedBarId);
                 },
                 lineCount(){
-                    return this.bars.filter( bar => bar.resultTime !== '').length;
+                    return this.bars.filter( bar => bar.rebirthTime !== '').length;
                 }
             },
             watch: {
                 datenow(now) {
                     var self = this;
-                    var theClosestTimeBar = self.bars.find(b => b.id === self.highlightResultTimeBarId);
+                    var theClosestTimeBar = self.bars.find(b => b.id === self.highlightRebirthTimeBarId);
                     if (!theClosestTimeBar)
                         return;
-                    var theClosestResultTime = theClosestTimeBar.resultTime;
-                    var difference = self.getTimeDiffInMinutes(new Date(theClosestResultTime), new Date(self.datenow));
+                    var theClosestRebirthTime = theClosestTimeBar.rebirthTime;
+                    var difference = self.getTimeDiffInMinutes(new Date(theClosestRebirthTime), new Date(self.datenow));
                     if (difference > 0 && difference <= self.remindIntervalMinutes && self.canPlayAudio) {
                         // alert("BOSS!!");
                         self.playAudio();
