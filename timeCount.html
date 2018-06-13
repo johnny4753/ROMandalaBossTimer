@@ -119,7 +119,7 @@
                              @input="$emit('death-time-change', $event.target.value)" 
                              placeholder="{h}:{m}" 
                              maxlength="5" 
-                             size="3"
+                             size="6"
                              @focus="$emit('input-focus')"
                              @blur="$emit('input-unfocus')">
             <button @click="getNow()">Get Now</button>
@@ -130,7 +130,7 @@
                         @input="$emit('rebirth-time-change', $event.target.value);"
                         placeholder="{h}:{m}" 
                         maxlength="5" 
-                        size="3"
+                        size="6"
                         @focus="$emit('input-focus')"
                         @blur="$emit('input-unfocus')"> [{{line}}] 
             </div>
