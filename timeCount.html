@@ -304,7 +304,7 @@
                         .indexOf(this.selectedBarId);
                 },
                 lineCount(){
-                    return this.bars.filter( bar => bar.rebirthTime !== '').length;
+                    return this.bars.filter( bar => bar.rebirthTime !== '' && bar.line !== '').length;
                 }
             },
             watch: {
