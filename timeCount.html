@@ -209,7 +209,7 @@
                         return;
                     }
                     var newBarId = ++this.initBarCount;
-                    this.bars.splice(this.selectedBarIndex + 1, 0, { id: newBarId, deathTime: '', rebirthTime: '' });
+                    this.bars.splice(this.selectedBarIndex + 1, 0, { id: newBarId, line:'', deathTime: '', rebirthTime: '', hasPeople: false });
                 },
                 deleteSelectedBar() {
                     if (this.selectedBarIndex === -1) {
