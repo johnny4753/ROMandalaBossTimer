@@ -22,8 +22,8 @@
                 <time-count-bar
                     v-for="bar in bars"
                     @get-now-event="getNowHandler(bar.id)" 
-                    @input-focus="inputFocusHandler()"
-                    @input-unfocus="inputUnFocusHandler()"
+                    @input-mouseover="inputMouseOverHandler()"
+                    @input-mouseout="inputMouseOutHandler()"
                     @click.native="selectedBarId = bar.id" 
                     :is-focus="selectedBarId == bar.id"
                     :key="bar.id" 
@@ -57,13 +57,20 @@
     </div>
 
     <style>
+        .grab {cursor: -webkit-grab; cursor: grab;}
+        .grab:active,
+        .grab:active:before,
+        .grab:active:after {
+            cursor: -webkit-grabbing;
+            cursor: -moz-grabbing;
+        }
+
         .list-complete-item {
             padding: 1px;
             margin-top: 4px;
             border: solid 1px;
             transition: all 0.2s;
         }
-
         .list-complete-enter,
         .list-complete-leave-active {
             opacity: 0;
@@ -107,21 +114,21 @@
                 isHighlightRebirthTime: Boolean
             },
             template: `
-        <div :class="{'bg-success' : isFocus}">
+        <div :class="{'bg-success' : isFocus, 'grab' : true}">
             界線：<input :value="line"
                         @input="$emit('line-change', $event.target.value)" 
                         placeholder="ex:1a" 
                         maxlength="3" 
                         size="4"
-                        @focus="$emit('input-focus')"
-                        @blur="$emit('input-unfocus')">
+                        @mouseover="$emit('input-mouseover')"
+                        @mouseout="$emit('input-mouseout')">
             死亡時間： <input :value="deathTime"
                              @input="$emit('death-time-change', $event.target.value)" 
                              placeholder="{h}:{m}" 
                              maxlength="5" 
                              size="6"
-                             @focus="$emit('input-focus')"
-                             @blur="$emit('input-unfocus')">
+                             @mouseover="$emit('input-mouseover')"
+                             @mouseout="$emit('input-mouseout')">
             <button @click="getNow()">Get Now</button>
             再生時間：
             <div style="display:inline" 
@@ -131,8 +138,8 @@
                         placeholder="{h}:{m}" 
                         maxlength="5" 
                         size="6"
-                        @focus="$emit('input-focus')"
-                        @blur="$emit('input-unfocus')"> 
+                        @mouseover="$emit('input-mouseover')"
+                        @mouseout="$emit('input-mouseout')"> 
                  <span v-if="line !== ''"> [{{line}}] </span> 
                  <span>
                     <button @click="hasPeopleBtnHandler()" 
@@ -261,10 +268,10 @@
                     theBar.rebirthTime = this.add90Min(dateNow);
                     this.highlightClosestRebirthTime(barId);
                 },
-                inputFocusHandler(){
+                inputMouseOverHandler(){
                     this.draggableOptions.disabled = true;
                 },
-                inputUnFocusHandler(){
+                inputMouseOutHandler(){
                     this.draggableOptions.disabled = false;
                 }
                 ,
