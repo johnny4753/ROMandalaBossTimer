@@ -57,14 +57,6 @@
     </div>
 
     <style>
-        .grab {cursor: -webkit-grab; cursor: grab;}
-        .grab:active,
-        .grab:active:before,
-        .grab:active:after {
-            cursor: -webkit-grabbing;
-            cursor: -moz-grabbing;
-        }
-
         .list-complete-item {
             padding: 1px;
             margin-top: 4px;
@@ -114,7 +106,7 @@
                 isHighlightRebirthTime: Boolean
             },
             template: `
-        <div :class="{'bg-success' : isFocus, 'grab' : true}">
+        <div :class="{'bg-success' : isFocus}">
             界線：<input :value="line"
                         @input="$emit('line-change', $event.target.value)" 
                         placeholder="ex:1a" 
@@ -248,6 +240,9 @@
                         var date = new Date();
                         date.setHours(hrs);
                         date.setMinutes(mins);
+                        if(this.getTimeDiffInMinutes(date, new Date()) < 0 ){
+                            date = moment(date).add(1, 'd').toDate();
+                        }
                         bar.rebirthTime = date;
                         bar.deathTime = formatDate(this.subtract90Min(date));
                     }
