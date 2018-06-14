@@ -36,6 +36,8 @@
                     @rebirth-time-change="(rebirthTime) => { rebirthTimeChangeHandler(bar, rebirthTime) }"
                     :is-highlight-rebirth-time="highlightRebirthTimeBarId == bar.id"
                     class="list-complete-item"
+                    :has-people="bar.hasPeople"
+                    @has-people-btn-click="bar.hasPeople = !bar.hasPeople"
                 >
                 </time-count-bar>
             </transition-group>
@@ -102,6 +104,7 @@
                 line: String,
                 deathTime: [Date,String],
                 rebirthTime: [Date,String],
+                hasPeople: Boolean,
                 isFocus: Boolean,
                 isHighlightRebirthTime: Boolean
             },
@@ -144,7 +147,6 @@
         `,
             data() {
                 return {
-                    hasPeople : false
                 }
             },
             methods: {
@@ -152,7 +154,7 @@
                     this.$emit('get-now-event');
                 },
                 hasPeopleBtnHandler(){
-                    this.hasPeople = !this.hasPeople;
+                    this.$emit('has-people-btn-click');
                 }
             },
             computed: {
@@ -171,7 +173,7 @@
         var app = new Vue({
             created() {
                 for (var i = 1; i <= this.initBarCount; i++) {
-                    this.bars.push({ id: i, line:'', deathTime: '', rebirthTime: '' });
+                    this.bars.push({ id: i, line:'', deathTime: '', rebirthTime: '', hasPeople: false });
                 }
                 $(document).on("keydown", this.disableF5);
                 this.interval = setInterval(this.time, 5000);
