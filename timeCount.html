@@ -193,7 +193,8 @@
                 exportToTxt(){
                     let barsData = this.bars.map(bar => {
                         let fRebirthTime = formatDate(bar.rebirthTime);
-                        return fRebirthTime && bar.line ? `\r\n${fRebirthTime} [${bar.line}]` : '';
+                        let hasPeopleSign = bar.hasPeople ? '*' : '';
+                        return fRebirthTime && bar.line ? `\r\n${fRebirthTime} [${bar.line}]${hasPeopleSign}` : '';
                     });
                     let blob = new Blob(barsData, {type: "text/plain;charset=utf-8"});
                     saveAs(blob, "Mandala Time.txt");
