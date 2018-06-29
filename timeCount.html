@@ -223,6 +223,9 @@
                     if ((e.which || e.keyCode) == 116) e.preventDefault();
                 },
                 deathTimeChangeHandler(bar, deathTime){
+                    if (!deathTime.includes(":") && deathTime.length === 4) {
+                        deathTime = deathTime.slice(0, 2) + ":" + deathTime.slice(2);
+                    }
                     bar.deathTime = deathTime;
                     var hrMin =  deathTime.split(':');
                     var hrs =hrMin[0];
