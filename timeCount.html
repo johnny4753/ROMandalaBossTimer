@@ -236,6 +236,9 @@
                 rebirthTimeChangeHandler(bar, rebirthTime){
                     if(!rebirthTime)
                         return;
+                    if (!rebirthTime.includes(":") && rebirthTime.length === 4) {
+                        rebirthTime = rebirthTime.slice(0, 2) + ":" + rebirthTime.slice(2);
+                    }
                     var hrMin =  rebirthTime.split(':');
                     if( hrMin[0] && hrMin[1] ){
                         var hrs =hrMin[0];
@@ -271,8 +274,7 @@
                 },
                 inputMouseOutHandler(){
                     this.draggableOptions.disabled = false;
-                }
-                ,
+                },
                 highlightClosestRebirthTime(barId) {
                     var theClosestRebirthTimeBarId = 0;
                     var nowTime = new Date();
