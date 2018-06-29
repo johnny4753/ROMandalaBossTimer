@@ -6,10 +6,12 @@
     <meta name="viewport" content="width=device-width">
     <title>RO守護永恆 - 刷珍稀曼陀羅計時器</title>
     <script src="./library/vue.js"></script>
+    <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
     <script src="./library/moment.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="./node_modules/sortablejs/Sortable.min.js"></script>
     <script src="./node_modules/vuedraggable/dist/vuedraggable.js"></script>
     <script src="./node_modules/file-saver/FileSaver.min.js"></script>
@@ -46,12 +48,12 @@
         <div>
             <p>
                 當前線數：{{lineCount}}
-                <button @click="exportToTxt">Export to txt</button>
+                <b-button size="sm" @click="exportToTxt">Export to txt</b-button>
             </p>
             
         </div>
-        <button @click="addNewBar">Add Bar below the Selected</button>
-        <button @click="deleteSelectedBar">Delete Selected Bar</button>
+        <b-button size="sm" @click="addNewBar">Add Bar below the Selected</b-button>
+        <b-button size="sm" @click="deleteSelectedBar">Delete Selected Bar</b-button>
         <input v-model="remindIntervalMinutes" size="1" type="number">分鐘前聲音提醒
         <audio id="myAudio">
             <source src="./sound/gem.ogg" type="audio/ogg"> Your browser does not support the audio element.
@@ -82,9 +84,11 @@
         @keyframes flash {
             from {
                 color: red;
+                font-weight: bolder
             }
             to {
-                color: black;
+                color:black;
+                font-weight: bolder
             }
         }
     </style>
@@ -109,7 +113,7 @@
                 isHighlightRebirthTime: Boolean
             },
             template: `
-        <div :class="{'bg-success' : isFocus}">
+        <div :class="{'bg-warning' : isFocus}">
             界線：<input :value="line"
                         @input="$emit('line-change', $event.target.value)" 
                         placeholder="ex:1a" 
@@ -124,23 +128,24 @@
                              size="6"
                              @mouseover="$emit('input-mouseover')"
                              @mouseout="$emit('input-mouseout')">
-            <button @click="getNow()">Get Now</button>
+            <b-button size="sm" variant="primary" @click="getNow()">Get Now</b-button>
             再生時間：
-            <div style="display:inline" 
-                 :class="{'text-danger' : isHighlightRebirthTime, 'flash' : isHighlightRebirthTime}">
-                 <input :value="fRebirthTime"
+            <div style="display:inline">
+                 <input :class="{'flash' : isHighlightRebirthTime}"
+                        :value="fRebirthTime"
                         @input="$emit('rebirth-time-change', $event.target.value);"
                         placeholder="{h}:{m}" 
                         maxlength="5" 
                         size="6"
                         @mouseover="$emit('input-mouseover')"
                         @mouseout="$emit('input-mouseout')"> 
-                 <span v-if="line !== ''"> [{{line}}] </span> 
+                 <span :class="{'flash' : isHighlightRebirthTime}" v-if="line !== ''"> [{{line}}] </span> 
                  <span>
-                    <button @click="hasPeopleBtnHandler()" 
-                            :class="['btn', hasPeopleStyle, 'btn-xs']">
+                    <b-button   size="sm"
+                                @click="hasPeopleBtnHandler()"
+                                :variant="hasPeopleStyle" >
                         {{hasPeopleText}}
-                    </button>
+                    </b-button>
                  </span>
             </div>
         </div>
@@ -162,7 +167,7 @@
                     return formatDate(this.rebirthTime);
                 },
                 hasPeopleStyle(){
-                    return this.hasPeople ? 'btn-danger' : 'btn-success'
+                    return this.hasPeople ? 'danger' : 'success'
                 },
                 hasPeopleText(){
                     return this.hasPeople ? '有人' : '沒人'
