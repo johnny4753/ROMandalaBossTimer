@@ -139,7 +139,7 @@
                         size="4"
                         @mouseover="$emit('input-mouseover')"
                         @mouseout="$emit('input-mouseout')">
-            死亡時間： <input :value="deathTime"
+            死亡時間：<input :value="deathTime"
                              @input="$emit('death-time-change', $event.target.value)" 
                              placeholder="{h}:{m}" 
                              maxlength="5" 
@@ -223,7 +223,10 @@
                             fRebirthTime = hrs.padStart(2, "0") + mins.padStart(2, "0");
                         }
                         let hasPeopleSign = bar.hasPeople ? '*' : '';
-                        return fRebirthTime && bar.line ? `[${bar.line}]${hasPeopleSign} ${fRebirthTime}\r\n` : '';
+
+                        let barLine = bar.line.padStart(3, " ");
+
+                        return fRebirthTime && bar.line ? `[${barLine}]${hasPeopleSign.padEnd(2, " ")}${fRebirthTime}\r\n` : '';
                     });
                     let blob = new Blob(barsData, {type: "text/plain;charset=utf-8"});
                     saveAs(blob, "Mandala Time.txt");
