@@ -51,6 +51,7 @@
                 <p>
                     當前線數：{{lineCount}}
                     <b-button size="sm" @click="exportToTxt">Export to txt</b-button>
+                    <b-button size="sm" @click="exportToClipboard">複製到剪貼簿</b-button>
                 </p>
             </div>
             <b-button size="sm" @click="addNewBar">Add Bar below the Selected</b-button>
@@ -138,6 +139,17 @@
         var hours = date.getHours();
         var minutes = date.getMinutes();
         return hours + ':' + minutes;
+    }
+    function copyToClipboard(text) {
+        if(!text)
+            return;
+        var $temp = $("<textarea>");
+        $temp.val(text);
+        $("body").append($temp);
+        $temp.select();
+        document.execCommand("copy");
+        $temp.remove();
+        alert("複製成功");
     }
 
         Vue.component('time-count-bar', {
@@ -236,23 +248,30 @@
                 draggableOptions:{disabled:false}
             },
             methods: {
+                barToString(bar){
+                    let fRebirthTime = formatDate(bar.rebirthTime);
+                    if (fRebirthTime) {
+                        let hrMin = fRebirthTime.split(':');
+                        let hrs = hrMin[0];
+                        let mins = hrMin[1];
+                        fRebirthTime = hrs.padStart(2, "0") + mins.padStart(2, "0");
+                    }
+                    let hasPeopleSign = bar.hasPeople ? '*' : '';
+
+                    let barLine = bar.line.padStart(3, " ");
+
+                    return fRebirthTime && bar.line ? `[${barLine}]${hasPeopleSign.padEnd(2, " ")}${fRebirthTime}\r\n` : '';
+                },
                 exportToTxt(){
-                    let barsData = this.bars.map(bar => {
-                        let fRebirthTime = formatDate(bar.rebirthTime);
-                        if (fRebirthTime) {
-                            let hrMin = fRebirthTime.split(':');
-                            let hrs = hrMin[0];
-                            let mins = hrMin[1];
-                            fRebirthTime = hrs.padStart(2, "0") + mins.padStart(2, "0");
-                        }
-                        let hasPeopleSign = bar.hasPeople ? '*' : '';
-
-                        let barLine = bar.line.padStart(3, " ");
-
-                        return fRebirthTime && bar.line ? `[${barLine}]${hasPeopleSign.padEnd(2, " ")}${fRebirthTime}\r\n` : '';
-                    });
+                    let barsData = this.bars.map(this.barToString);
                     let blob = new Blob(barsData, {type: "text/plain;charset=utf-8"});
                     saveAs(blob, "Mandala Time.txt");
+                },
+                exportToClipboard(){
+                    let barsDataArray = this.bars.map(this.barToString);
+                    var text = "";
+                    barsDataArray.forEach(barStr => text += barStr);
+                    copyToClipboard(text);
                 },
                 time() {
                     var now = new Date();
