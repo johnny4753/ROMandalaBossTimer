@@ -109,6 +109,26 @@
                 font-weight: bolder
             }
         }
+
+        @media (max-width: 690px) {
+            body {
+                background-color: lightblue;
+            }
+
+            .resp-block{
+                display: block;
+            }
+
+            .main {
+                padding-bottom: 30%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main {
+                padding-bottom: 60%;
+            }
+        }
     </style>
 
     <script>
@@ -132,24 +152,27 @@
             },
             template: `
         <div :class="{'bg-warning' : isFocus}">
-            界線：<input :value="line"
-                        @input="$emit('line-change', $event.target.value)" 
-                        placeholder="ex:1a" 
-                        maxlength="3" 
-                        size="4"
-                        @mouseover="$emit('input-mouseover')"
-                        @mouseout="$emit('input-mouseout')">
-            死亡時間：<input :value="deathTime"
-                             @input="$emit('death-time-change', $event.target.value)" 
-                             placeholder="{h}:{m}" 
-                             maxlength="5" 
-                             size="6"
-                             @mouseover="$emit('input-mouseover')"
-                             @mouseout="$emit('input-mouseout')">
-            <b-button size="sm" variant="primary" @click="getNow()">Get Now</b-button>
-            再生時間：
-            <div style="display:inline">
-                 <input :class="{'flash' : isHighlightRebirthTime}"
+            <span class="resp-block">
+                界線：<input :value="line"
+                            @input="$emit('line-change', $event.target.value)" 
+                            placeholder="ex:1a" 
+                            maxlength="3" 
+                            size="4"
+                            @mouseover="$emit('input-mouseover')"
+                            @mouseout="$emit('input-mouseout')">
+            </span>
+            <span class="resp-block">                        
+                死亡時間：<input :value="deathTime"
+                                @input="$emit('death-time-change', $event.target.value)" 
+                                placeholder="{h}:{m}" 
+                                maxlength="5" 
+                                size="6"
+                                @mouseover="$emit('input-mouseover')"
+                                @mouseout="$emit('input-mouseout')">
+                <b-button size="sm" variant="primary" @click="getNow()">Get Now</b-button>
+            </span>
+            <span class="resp-block">
+                再生時間：<input :class="{'flash' : isHighlightRebirthTime}"
                         :value="fRebirthTime"
                         @input="$emit('rebirth-time-change', $event.target.value);"
                         placeholder="{h}:{m}" 
@@ -157,15 +180,15 @@
                         size="6"
                         @mouseover="$emit('input-mouseover')"
                         @mouseout="$emit('input-mouseout')"> 
-                 <span :class="{'flash' : isHighlightRebirthTime}" v-if="line !== ''"> [{{line}}] </span> 
-                 <span>
-                    <b-button   size="sm"
-                                @click="hasPeopleBtnHandler()"
-                                :variant="hasPeopleStyle" >
-                        {{hasPeopleText}}
-                    </b-button>
-                 </span>
-            </div>
+                <span :class="{'flash' : isHighlightRebirthTime}" v-if="line !== ''"> [{{line}}] </span> 
+                <span>
+                   <b-button   size="sm"
+                               @click="hasPeopleBtnHandler()"
+                               :variant="hasPeopleStyle" >
+                       {{hasPeopleText}}
+                   </b-button>
+                </span>
+            </span>
         </div>
         `,
             data() {
