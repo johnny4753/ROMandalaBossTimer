@@ -50,7 +50,7 @@
                     當前線數：{{lineCount}}
                     <b-button size="sm" @click="exportToTxt">Export to txt</b-button>
                     <b-button size="sm" @click="exportToClipboard">複製所有界線時間</b-button>
-                    <b-form-checkbox v-model="isDraggableLock">拖拉鎖定</b-form-checkbox>
+                    <b-form-checkbox plain v-model="isDraggableLock">拖拉鎖定</b-form-checkbox>
                 </p>
             </div>
             <b-button size="sm" @click="addNewBar">Add Bar below the Selected</b-button>
