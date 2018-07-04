@@ -24,9 +24,7 @@
                 <transition-group name="list-complete">
                     <time-count-bar
                         v-for="bar in bars"
-                        @get-now-event="getNowHandler(bar.id)" 
-                        @input-mouseover="inputMouseOverHandler()"
-                        @input-mouseout="inputMouseOutHandler()"
+                        @get-now-event="getNowHandler(bar.id)"
                         @click.native="selectedBarId = bar.id" 
                         :is-focus="selectedBarId == bar.id"
                         :key="bar.id" 
@@ -52,6 +50,7 @@
                     當前線數：{{lineCount}}
                     <b-button size="sm" @click="exportToTxt">Export to txt</b-button>
                     <b-button size="sm" @click="exportToClipboard">複製所有界線時間</b-button>
+                    <b-form-checkbox v-model="isDraggableLock">拖拉鎖定</b-form-checkbox>
                 </p>
             </div>
             <b-button size="sm" @click="addNewBar">Add Bar below the Selected</b-button>
@@ -169,18 +168,14 @@
                             @input="$emit('line-change', $event.target.value)" 
                             placeholder="ex:1a" 
                             maxlength="3" 
-                            size="4"
-                            @mouseover="$emit('input-mouseover')"
-                            @mouseout="$emit('input-mouseout')">
+                            size="4">
             </span>
             <span class="resp-block">                        
                 死亡時間：<input :value="deathTime"
                                 @input="$emit('death-time-change', $event.target.value)" 
                                 placeholder="{h}:{m}" 
                                 maxlength="5" 
-                                size="6"
-                                @mouseover="$emit('input-mouseover')"
-                                @mouseout="$emit('input-mouseout')">
+                                size="6">
                 <b-button size="sm" variant="primary" @click="getNow()">Get Now</b-button>
             </span>
             <span class="resp-block">
@@ -189,9 +184,7 @@
                         @input="$emit('rebirth-time-change', $event.target.value);"
                         placeholder="{h}:{m}" 
                         maxlength="5" 
-                        size="6"
-                        @mouseover="$emit('input-mouseover')"
-                        @mouseout="$emit('input-mouseout')"> 
+                        size="6"> 
                 <span :class="{'flash' : isHighlightRebirthTime}" v-if="line !== ''"> [{{line}}] </span> 
                 <span>
                    <b-button   size="sm"
@@ -245,7 +238,8 @@
                 datenow: '',
                 canPlayAudio: true,
                 remindIntervalMinutes: 2,
-                draggableOptions:{disabled:false}
+                draggableOptions:{disabled:true},
+                isDraggableLock: true
             },
             methods: {
                 barToString(bar){
@@ -346,12 +340,6 @@
                     theBar.rebirthTime = this.add90Min(dateNow);
                     this.highlightClosestRebirthTime(barId);
                 },
-                inputMouseOverHandler(){
-                    this.draggableOptions.disabled = true;
-                },
-                inputMouseOutHandler(){
-                    this.draggableOptions.disabled = false;
-                },
                 highlightClosestRebirthTime(barId) {
                     var theClosestRebirthTimeBarId = 0;
                     var nowTime = new Date();
@@ -409,6 +397,9 @@
                     if (val == false) {
                         setTimeout(function () { self.canPlayAudio = true; }, self.remindIntervalMinutes * 60 * 1000);
                     }
+                },
+                isDraggableLock(val){
+                    this.draggableOptions.disabled = val;
                 }
             }
         })
