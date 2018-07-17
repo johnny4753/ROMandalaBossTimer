@@ -48,13 +48,21 @@
             <div>
                 <p>
                     當前線數：{{lineCount}}
-                    <button class="btn btn-secondary btn-sm" @click="exportToTxt">Export to txt</button>
-                    <button class="btn btn-secondary btn-sm" @click="exportToClipboard">複製所有界線時間</button>
+                    <button class="btn btn-secondary btn-sm" @click="addNewBar">新增</button>
+                    <button class="btn btn-secondary btn-sm" @click="deleteSelectedBar">刪除</button>
+                    
+                    
                     <b-form-checkbox plain v-model="isDraggableLock">拖拉鎖定</b-form-checkbox>
                 </p>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="addNewBar">Add Bar below the Selected</button>
-            <button class="btn btn-secondary btn-sm" @click="deleteSelectedBar">Delete Selected Bar</button>
+            <button class="btn btn-secondary btn-sm" @click="exportToClipboard">複製所有界線時間</button>
+            <button class="btn btn-secondary btn-sm" @click="exportToTxt">Export to txt</button>
+            
+            <label for="file-upload" class="custom-file-upload btn-secondary btn-sm">
+                Import from txt
+            </label>
+            <input id="file-upload" @change="readTxtFile($event)" type="file" />
+
             <input v-model="remindIntervalMinutes" size="1" type="number">分鐘前聲音提醒
         </div>
         <audio id="myAudio">
@@ -77,6 +85,20 @@
             background-color: rgb(240, 240, 240);
             width: 100%;
             border-top: 2px ridge;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+        .custom-file-upload {
+            border: 1px solid;
+            border-radius: 3px;
+            display: inline-block;
+            padding-top: 3px;
+            padding-bottom: 6.5px;
+            padding-left: 7px;
+            padding-right: 7px;
+            cursor: pointer;
         }
 
         .list-complete-item {
@@ -150,6 +172,9 @@
         $temp.remove();
         alert("已複製所有界線及再生時間");
     }
+    function hasExtension(fileName, exts) {
+        return (new RegExp('(' + exts.join('|').replace(/\./g, '\\.') + ')$')).test(fileName);
+    }
 
         Vue.component('time-count-bar', {
             props: {
@@ -165,7 +190,7 @@
         <div :class="{'bg-warning' : isFocus}">
             <span class="resp-block">
                 界線：<input :value="line"
-                            @input="$emit('line-change', $event.target.value)" 
+                            @input="lineInputHandler($event)" 
                             placeholder="ex:1a" 
                             maxlength="3" 
                             size="4">
@@ -200,6 +225,9 @@
                 }
             },
             methods: {
+                lineInputHandler(event){
+                    this.$emit('line-change', event.target.value);
+                },
                 getNow() {
                     this.$emit('get-now-event');
                 },
@@ -255,6 +283,32 @@
 
                     return fRebirthTime && bar.line ? `[${barLine}]${hasPeopleSign.padEnd(2, " ")}${fRebirthTime}\r\n` : '';
                 },
+                readTxtFile(event){
+                    const files = event.target.files;
+                    let fileName = event.target.value;
+                    if (!hasExtension(fileName, ['.txt'])) {
+                        alert("必須為 txt 檔");
+                        return;
+                    }
+                    var reader = new FileReader();
+                    var self = this;
+                    reader.onload = (function(reader, self)
+                    {
+                        return function () {
+                            var contents = reader.result;
+                            var fileLines = contents.split('\r\n');
+                            for (let index = 0; index < fileLines.length; index++) {
+                                const lineData = fileLines[index];
+                                let ary = lineData.split(' ');
+                                let line = ary[0];
+                                let rebirthTime = ary[1];
+                                self.bars[index].line = line;
+                                self.rebirthTimeChangeHandler(self.bars[index], rebirthTime);
+                            }
+                        }
+                    })(reader, self);
+                    reader.readAsText(files[0]);
+                },
                 exportToTxt(){
                     let barsData = this.bars.map(this.barToString);
                     let blob = new Blob(barsData, {type: "text/plain;charset=utf-8"});
@@ -306,7 +360,9 @@
                 rebirthTimeChangeHandler(bar, rebirthTime){
                     if(!rebirthTime)
                         return;
+                    
                     if (!rebirthTime.includes(":") && rebirthTime.length === 4) {
+                        
                         rebirthTime = rebirthTime.slice(0, 2) + ":" + rebirthTime.slice(2);
                     }
                     var hrMin =  rebirthTime.split(':');
