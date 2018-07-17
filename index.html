@@ -279,9 +279,9 @@
                     }
                     let hasPeopleSign = bar.hasPeople ? '*' : '';
 
-                    let barLine = bar.line.padStart(3, " ");
+                    let barLine = bar.line;
 
-                    return fRebirthTime && bar.line ? `${barLine}${hasPeopleSign.padEnd(2, " ")}${fRebirthTime}\r\n` : '';
+                    return fRebirthTime && bar.line ? `${barLine}${hasPeopleSign} ${fRebirthTime}\r\n` : '';
                 },
                 readTxtFile(event){
                     const files = event.target.files;
@@ -301,6 +301,10 @@
                                 const lineData = fileLines[index];
                                 let ary = lineData.split(' ');
                                 let line = ary[0];
+                                if(line.includes('*')){
+                                    self.bars[index].hasPeople = true;
+                                    line = line.replace('*', '');
+                                }
                                 let rebirthTime = ary[1];
                                 self.bars[index].line = line;
                                 self.rebirthTimeChangeHandler(self.bars[index], rebirthTime);
