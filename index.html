@@ -281,7 +281,7 @@
 
                     let barLine = bar.line.padStart(3, " ");
 
-                    return fRebirthTime && bar.line ? `[${barLine}]${hasPeopleSign.padEnd(2, " ")}${fRebirthTime}\r\n` : '';
+                    return fRebirthTime && bar.line ? `${barLine}${hasPeopleSign.padEnd(2, " ")}${fRebirthTime}\r\n` : '';
                 },
                 readTxtFile(event){
                     const files = event.target.files;
