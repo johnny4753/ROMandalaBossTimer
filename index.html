@@ -288,6 +288,7 @@
                     let fileName = event.target.value;
                     if (!hasExtension(fileName, ['.txt'])) {
                         alert("必須為 txt 檔");
+                        event.target.value = "";
                         return;
                     }
                     var reader = new FileReader();
