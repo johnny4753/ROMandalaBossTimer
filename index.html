@@ -313,6 +313,7 @@
                                 if(line.includes('*') || rebirthTime.includes('*')){
                                     self.bars[index].hasPeople = true;
                                     line = line.replace('*', '');
+                                    rebirthTime = rebirthTime.replace('*', '');
                                 }
                                 
                                 self.bars[index].line = line.toUpperCase();
