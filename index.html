@@ -299,15 +299,23 @@
                             var contents = reader.result;
                             var fileLines = contents.split('\r\n');
                             for (let index = 0; index < fileLines.length; index++) {
-                                const lineData = fileLines[index];
+                                if (!self.bars[index]) {
+                                    var newBarId = ++self.initBarCount;
+                                    self.bars.push({ id: newBarId, line:'', deathTime: '', rebirthTime: '', hasPeople: false });
+                                }
+                                let lineData = fileLines[index];
+                                lineData = lineData.replace(/\s\s+/g, ' ');
+
                                 let ary = lineData.split(' ');
                                 let line = ary[0];
-                                if(line.includes('*')){
+                                let rebirthTime = ary[1];
+
+                                if(line.includes('*') || rebirthTime.includes('*')){
                                     self.bars[index].hasPeople = true;
                                     line = line.replace('*', '');
                                 }
-                                let rebirthTime = ary[1];
-                                self.bars[index].line = line;
+                                
+                                self.bars[index].line = line.toUpperCase();
                                 self.rebirthTimeChangeHandler(self.bars[index], rebirthTime);
                             }
                         }
