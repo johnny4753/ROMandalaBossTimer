@@ -304,6 +304,9 @@
                                     self.bars.push({ id: newBarId, line:'', deathTime: '', rebirthTime: '', hasPeople: false });
                                 }
                                 let lineData = fileLines[index];
+                                if(!lineData) {
+                                    continue;
+                                }
                                 lineData = lineData.replace(/\s\s+/g, ' ').trim();
 
                                 let ary = lineData.split(' ');
