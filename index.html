@@ -279,9 +279,9 @@
                     }
                     let hasPeopleSign = bar.hasPeople ? '*' : '';
 
-                    let barLine = bar.line;
+                    let barLine = bar.line.padStart(3, " ");
 
-                    return fRebirthTime && bar.line ? `${barLine}${hasPeopleSign} ${fRebirthTime}\r\n` : '';
+                    return fRebirthTime && bar.line ? `${barLine}${hasPeopleSign.padEnd(2, " ")}${fRebirthTime}\r\n` : '';
                 },
                 readTxtFile(event){
                     const files = event.target.files;
@@ -304,7 +304,7 @@
                                     self.bars.push({ id: newBarId, line:'', deathTime: '', rebirthTime: '', hasPeople: false });
                                 }
                                 let lineData = fileLines[index];
-                                lineData = lineData.replace(/\s\s+/g, ' ');
+                                lineData = lineData.replace(/\s\s+/g, ' ').trim();
 
                                 let ary = lineData.split(' ');
                                 let line = ary[0];
@@ -317,7 +317,7 @@
                                 }
                                 
                                 self.bars[index].line = line.toUpperCase();
-                                self.rebirthTimeChangeHandler(self.bars[index], rebirthTime);
+                                self.rebirthTimeChangeHandler(self.bars[index], rebirthTime.padStart(4, "0") );
                             }
                         }
                     })(reader, self);
