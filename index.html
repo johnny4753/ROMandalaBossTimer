@@ -422,7 +422,7 @@
                         var rTime = new Date(notIncludeSelfBars[i].rebirthTime);
                         var difference = this.getTimeDiffInMinutes(rTime, nowTime);
                         // alert("difference = "+difference);
-                        if (difference > 0 && difference < minTotalMinutesDiff) {
+                        if (difference >= -1 && difference < minTotalMinutesDiff) {
                             minTotalMinutesDiff = difference;
                             theClosestRebirthTimeBarId = notIncludeSelfBars[i].id;
                         }
