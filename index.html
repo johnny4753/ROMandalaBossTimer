@@ -121,6 +121,17 @@
             animation-play-state: running;
         }
 
+        .btn-blue {
+            border-color: #2196F3;
+            background: white;
+            color: dodgerblue;
+        }
+
+        .btn-blue:hover {
+            background: rgb(221, 241, 250);
+            color: dodgerblue;
+        }
+
         @keyframes flash {
             from {
                 color: red;
@@ -246,7 +257,7 @@
                     return this.hasPeople ? '有人' : '沒人'
                 },
                 getNowBtnStyle(){
-                    return this.isHighlightRebirthTime ? 'btn-primary' : 'btn-secondary'
+                    return this.isHighlightRebirthTime ? 'btn-primary' : 'btn-blue'
                 }
             }
         })
