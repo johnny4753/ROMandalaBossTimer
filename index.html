@@ -201,7 +201,7 @@
                                 placeholder="{h}:{m}" 
                                 maxlength="5" 
                                 size="6">
-                <button class="btn btn-primary btn-sm" @click="getNow()">Get Now</button>
+                <button :class="['btn', getNowBtnStyle, 'btn-sm']" @click="getNow()">Get Now</button>
             </span>
             <span class="resp-block">
                 再生時間：<input :class="{'flash' : isHighlightRebirthTime}"
@@ -244,6 +244,9 @@
                 },
                 hasPeopleText(){
                     return this.hasPeople ? '有人' : '沒人'
+                },
+                getNowBtnStyle(){
+                    return this.isHighlightRebirthTime ? 'btn-danger' : 'btn-primary'
                 }
             }
         })
