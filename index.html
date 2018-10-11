@@ -55,15 +55,18 @@
                     <b-form-checkbox plain v-model="isDraggableLock">拖拉鎖定</b-form-checkbox>
                 </p>
             </div>
-            <button class="btn btn-secondary btn-sm" @click="exportToClipboard">複製所有界線時間</button>
-            <button class="btn btn-secondary btn-sm" @click="exportToTxt">Export to txt</button>
-            
-            <label for="file-upload" class="custom-file-upload btn-secondary btn-sm">
-                Import from txt
-            </label>
-            <input id="file-upload" @change="readTxtFile($event)" type="file" />
+            <div>
+                <button class="btn btn-secondary btn-sm" @click="exportToClipboard">複製所有界線時間</button>
+                <button class="btn btn-secondary btn-sm" @click="exportToTxt">Export to txt</button>
+                
+                <label for="file-upload" class="custom-file-upload btn-secondary btn-sm">
+                    Import from txt
+                </label>
+                <input id="file-upload" @change="readTxtFile($event)" type="file" />
 
-            <input v-model="remindIntervalMinutes" size="1" type="number">分鐘前聲音提醒
+                <input v-model="remindIntervalMinutes" size="1" type="number">分鐘前聲音提醒
+            </div>
+            重生間隔<input v-model="calculateTimeInterval" size="2" type="number">分鐘
         </div>
         <audio id="myAudio">
             <source src="./sound/gem.ogg" type="audio/ogg"> Your browser does not support the audio element.
@@ -280,7 +283,8 @@
                 canPlayAudio: true,
                 remindIntervalMinutes: 2,
                 draggableOptions:{disabled:true},
-                isDraggableLock: true
+                isDraggableLock: true,
+                calculateTimeInterval : 90
             },
             methods: {
                 barToString(bar){
@@ -385,7 +389,7 @@
                     var date = new Date();
                     date.setHours(hrs);
                     date.setMinutes(mins);
-                    bar.rebirthTime = this.add90Min(date);
+                    bar.rebirthTime = this.addMins(date);
                     this.highlightClosestRebirthTime();
                 },
                 rebirthTimeChangeHandler(bar, rebirthTime){
@@ -407,23 +411,23 @@
                             date = moment(date).add(1, 'd').toDate();
                         }
                         bar.rebirthTime = date;
-                        bar.deathTime = formatDate(this.subtract90Min(date));
+                        bar.deathTime = formatDate(this.subtractMins(date));
                     }
                     this.highlightClosestRebirthTime();
                 },
-                add90Min(deathTime) {
-                    var newDateObj = moment(deathTime).add(90, 'm');
+                addMins(deathTime) {
+                    var newDateObj = moment(deathTime).add(this.calculateTimeInterval, 'm');
                     return newDateObj.toDate();
                 },
-                subtract90Min(rebirthTime){
-                    var newDateObj = moment(rebirthTime).subtract(90, 'm');
+                subtractMins(rebirthTime){
+                    var newDateObj = moment(rebirthTime).subtract(this.calculateTimeInterval, 'm');
                     return newDateObj.toDate();
                 },
                 getNowHandler(barId) {
                     var dateNow = new Date(); // for now
                     var theBar = this.bars.find(b => b.id === barId);
                     theBar.deathTime = formatDate(dateNow);
-                    theBar.rebirthTime = this.add90Min(dateNow);
+                    theBar.rebirthTime = this.addMins(dateNow);
                     this.highlightClosestRebirthTime(barId);
                 },
                 highlightClosestRebirthTime(barId) {
