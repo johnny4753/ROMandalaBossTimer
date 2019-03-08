@@ -12,9 +12,6 @@
     <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"/>
     <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <!-- <script src="./node_modules/sortablejs/Sortable.min.js"></script>
-    <script src="./node_modules/vuedraggable/dist/vuedraggable.js"></script>
-    <script src="./node_modules/file-saver/FileSaver.min.js"></script> -->
     <script src="./library/Sortable.min.js"></script>
     <script src="./library//vuedraggable.js"></script>
     <script src="./library/FileSaver.min.js"></script>
@@ -67,9 +64,12 @@
                 </label>
                 <input id="file-upload" @change="readTxtFile($event)" type="file" />
 
-                <input v-model="remindIntervalMinutes" style="width: 50px" size="1" type="number">分鐘前聲音提醒
+                <input v-model="remindIntervalMinutes" style="width: 40px" size="1" type="number">分鐘前聲音提醒
             </div>
             重生間隔<input v-model="calculateTimeInterval" style="width: 50px" size="2" type="number">分鐘
+            <button @click="calculateTimeInterval = 90">草</button>
+            <button @click="calculateTimeInterval = 60">墓碑</button>
+            <button @click="calculateTimeInterval = 120">小寶</button>
         </div>
         <audio id="myAudio">
             <source src="./sound/gem.ogg" type="audio/ogg"> Your browser does not support the audio element.
@@ -284,7 +284,7 @@
                 highlightRebirthTimeBarId: 0,
                 datenow: '',
                 canPlayAudio: true,
-                remindIntervalMinutes: 2,
+                remindIntervalMinutes: 1,
                 draggableOptions:{disabled:true},
                 isDraggableLock: true,
                 calculateTimeInterval : 90
