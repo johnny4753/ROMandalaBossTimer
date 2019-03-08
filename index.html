@@ -67,9 +67,9 @@
                 </label>
                 <input id="file-upload" @change="readTxtFile($event)" type="file" />
 
-                <input v-model="remindIntervalMinutes" size="1" type="number">分鐘前聲音提醒
+                <input v-model="remindIntervalMinutes" style="width: 50px" size="1" type="number">分鐘前聲音提醒
             </div>
-            重生間隔<input v-model="calculateTimeInterval" size="2" type="number">分鐘
+            重生間隔<input v-model="calculateTimeInterval" style="width: 50px" size="2" type="number">分鐘
         </div>
         <audio id="myAudio">
             <source src="./sound/gem.ogg" type="audio/ogg"> Your browser does not support the audio element.
